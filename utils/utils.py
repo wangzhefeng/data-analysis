@@ -43,7 +43,7 @@ def scatter_plot(df, xlabel, *ylabels, imgpath = None):
         plt.scatter(df[xlabel], df[ylabel], label = ylabel)
     plt.title("%s VS %s" % (xlabel, ylabel))
     plt.xlabel("%s" % xlabel)
-    plt.ylabel("%s" % ylabel)
+    # plt.ylabel("%s" % ylabel)
     plt.legend()
     if imgpath:
         plt.savefig(imgpath)
