@@ -16,8 +16,8 @@ def get_origin_data():
     origin data
     """
     # raw data
-    eturb_m1_data = pd.read_csv("/mnt/e/dev/test/eturb_model/data/eturb_m1_1min_metrics.csv", header = 0, index_col = None)
-    eturb_m2_data = pd.read_csv("/mnt/e/dev/test/eturb_model/data/eturb_m2_1min_metrics.csv", header = 0, index_col = None)
+    eturb_m1_data = pd.read_csv("/mnt/e/dev/data-analysis/eturb_model/data/eturb_m1_1min_metrics-0817.csv", header = 0, index_col = None)
+    eturb_m2_data = pd.read_csv("/mnt/e/dev/data-analysis/eturb_model/data/eturb_m2_1min_metrics-0817.csv", header = 0, index_col = None)
     
     data = pd.DataFrame()
     # eturb_m1
@@ -56,7 +56,7 @@ def get_result_data():
         "eturb_m2_result_origin"
     ]
     for name in file_names:
-        temp_data = pd.read_csv("/mnt/e/dev/test/eturb_model/result/regression/%s.csv" % name, header = 0, index_col = None)
+        temp_data = pd.read_csv("/mnt/e/dev/data-analysis/eturb_model/result/regression/%s.csv" % name, header = 0, index_col = None)
         result_data = pd.concat([result_data, temp_data], axis = 1, sort = False)
 
     return result_data
@@ -79,7 +79,7 @@ def data_preprocessing(data, method, is_export_csv = 0):
         df["eturb_m2_steam_flow_side"] = np.array(data["eturb_m2_steam_flow_side"].iloc[1:1441]) - np.array(data["eturb_m2_steam_flow_side"].iloc[0:1440])
         df["eturb_m2_electricity_generation"] = np.array(data["eturb_m2_electricity_generation"].iloc[1:1441]) - np.array(data["eturb_m2_electricity_generation"].iloc[0:1440])
         if is_export_csv:
-            df.to_csv("/mnt/e/dev/test/eturb_model/result/raw_data.csv", index = None)
+            df.to_csv("/mnt/e/dev/data-analysis/eturb_model/result/raw_data.csv", index = None)
     elif method == "mean":
         for i, j in zip(range(0, 1450, 10), range(60, 1450, 10)):
             temp_df = pd.DataFrame(data.iloc[i:j].mean(axis = 0))
@@ -189,8 +189,8 @@ def main_v1(data, method, is_export_csv = 0):
     # result data export to csv file
     # -----------------------------------------
     if is_export_csv:
-        eturb_m1_result_df.to_csv("/mnt/e/dev/test/eturb_model/result/eturb_m1_result_%s.csv" % method, index = None)
-        eturb_m2_result_df.to_csv("/mnt/e/dev/test/eturb_model/result/eturb_m2_result_%s.csv" % method, index = None)
+        eturb_m1_result_df.to_csv("/mnt/e/dev/data-analysis/eturb_model/result/eturb_m1_result_%s.csv" % method, index = None)
+        eturb_m2_result_df.to_csv("/mnt/e/dev/data-analysis/eturb_model/result/eturb_m2_result_%s.csv" % method, index = None)
 
     return eturb_m1_result_df, eturb_m2_result_df
 
@@ -229,7 +229,7 @@ def main_v2_eturb_m2(result_df, df, is_export_csv = 0):
     # --------------------------------------------------------------
     if is_export_csv:
         final_df = pd.concat([result_df, df, h_df], axis = 1)
-        final_df.to_csv("/mnt/e/dev/test/eturb_model/result/eturb_m2_pressure_k1_k2_enthalpy.csv", index = None)
+        final_df.to_csv("/mnt/e/dev/data-analysis/eturb_model/result/eturb_m2_pressure_k1_k2_enthalpy.csv", index = None)
 
 
 def main_v2_eturb_m1(result_df, df, is_export_csv = 0):
@@ -266,7 +266,7 @@ def main_v2_eturb_m1(result_df, df, is_export_csv = 0):
     # --------------------------------------------------------------
     if is_export_csv:
         final_df = pd.concat([result_df, df, h_df], axis = 1)
-        final_df.to_csv("/mnt/e/dev/test/eturb_model/result/eturb_m1_pressure_k1_k2_enthalpy.csv", index = None)
+        final_df.to_csv("/mnt/e/dev/data-analysis/eturb_model/result/eturb_m1_pressure_k1_k2_enthalpy.csv", index = None)
     # --------------------------------------------------------------
     # k1 ~ a(P_in - P_out) + b
     # --------------------------------------------------------------
@@ -353,9 +353,22 @@ if __name__ == "__main__":
     # ============================================================
     # regression 3
     # ============================================================
-    METHOD = "origin"
+    # METHOD = "delta"
+    # data = get_origin_data()
+    # df = data_preprocessing(data, method = METHOD, is_export_csv = 0)
+    # print(df.head())
+    # main_v3(df, method = METHOD)
+
+    # ============================================================
+    # regression 4
+    # ============================================================
+    METHOD = "mean"
+    result_df = get_result_data()
+    result_df = result_df[["eturb_m1_origin_k1", "eturb_m1_origin_k2"]].reset_index(drop = True)
+    
     data = get_origin_data()
     df = data_preprocessing(data, method = METHOD, is_export_csv = 0)
-    main_v3(df, method = METHOD)
-    
-    
+    df = df["eturb_m1_steam_pressure_in"].reset_index(drop = True)
+
+    regression_df = pd.concat([result_df, df], axis = 1, sort = False)
+    print(regression_df)
