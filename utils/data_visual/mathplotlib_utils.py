@@ -86,7 +86,7 @@ def scatter_plot(df, xlabel, *ylabels, imgpath = None):
         plt.legend()
         if imgpath:
             plt.savefig(imgpath)
-        plt.show();
+        plt.show()
 
 def scatter_many_plot(df, *xlabels, *ylabels, imgpath = None):
     if len(x_lables) == len(ylables):
