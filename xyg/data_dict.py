@@ -11,6 +11,10 @@ TIMESTAMP = '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
 SQL_FILE = os.path.join(RESULT_PATH, "xyg_%s.sql" % TIMESTAMP)
 
 
+
+
+
+
 def write_sql_string(sql):
     final_sql_header = "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n"
     with open(SQL_FILE, "a") as f:
@@ -28,9 +32,14 @@ def get_database_tabel_parameters():
 def get_sql_string(table):
     final_sql_string = str()
     for index, table_row in table.iterrows():
+        # 表注释
+        table_comment = table_row[0]
+        # 表名
         table_name = table_row[1]
         table_data = pd.read_excel(DATA_PATH, sheet_name = table_row[0], header = 0, keep_default_na = False)
         table_data.reset_index(drop = True)
+        print("正在解析表：", table_row[0])
+        
         # 主键参数
         primary_key = table_data[table_data["主键"] == 1]["字段名称"].iloc[0]
         # 外键参数
@@ -89,7 +98,7 @@ def get_sql_string(table):
                            "    PRIMARY KEY (`%s`) USING BTREE," % primary_key + "\n" + \
                            "    CONSTRAINT `foreign_key_name` FOREIGN KEY (`foreign_key`) REFERENCES `master_table`(`master_table_primary_key`)," + "\n" + \
                            "    INDEX (`index`)" + "\n" + \
-                           ") ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC COMMENT = '%s';" % table_name + "\n" + \
+                           ") ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC COMMENT = '%s';" % table_comment + "\n" + \
                            "SET FOREIGN_KEY_CHECKS = 1;" + "\n" * 3
         final_sql_string = final_sql_string + table_sql_string
         
