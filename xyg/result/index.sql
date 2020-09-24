@@ -102,3 +102,54 @@ FOREIGN KEY(`product_ingredients_card_id`) REFERENCES card_ingredients(`id`);
 
 
 
+-- ===============================================================================
+ALTER TABLE `card_craft_tempering_modify_record` ADD CONSTRAINT fk_tempering_id_1
+FOREIGN KEY(`tempering_id`) REFERENCES info_craft_tempering(`id`);
+
+ALTER TABLE `card_tempering_surface_hardness` ADD CONSTRAINT fk_tempering_id_2
+FOREIGN KEY(`tempering_id`) REFERENCES info_craft_tempering(`id`);
+
+ALTER TABLE `card_tempering_performance` ADD CONSTRAINT fk_tempering_id_3
+FOREIGN KEY(`tempering_id`) REFERENCES info_craft_tempering(`id`);
+
+ALTER TABLE `card_tempering_keypoint` ADD CONSTRAINT fk_tempering_id_4
+FOREIGN KEY(`tempering_id`) REFERENCES info_craft_tempering(`id`);
+
+ALTER TABLE `card_tempering_keypoint_quenching` ADD CONSTRAINT tempering_keypoint_id_1
+FOREIGN KEY(`tempering_keypoint_id`) REFERENCES info_tempering_keypoint(`id`);
+
+ALTER TABLE `card_tempering_multiregulation_period` ADD CONSTRAINT fk_quenching_pc_id
+FOREIGN KEY(`quenching_pc_id`) REFERENCES info_tempering_keypoint_quenching(`id`);
+
+ALTER TABLE `card_tempering_multiregulation_period` ADD CONSTRAINT fk_tempering_pc_id
+FOREIGN KEY(`tempering_pc_id`) REFERENCES info_tempering_keypoint_tempering(`id`);
+
+ALTER TABLE `card_tempering_keypoint_tempering` ADD CONSTRAINT tempering_keypoint_id_2
+FOREIGN KEY(`tempering_keypoint_id`) REFERENCES info_tempering_keypoint(`id`);
+
+ALTER TABLE `card_tempering_keypoint_straightening` ADD CONSTRAINT tempering_keypoint_id_3
+FOREIGN KEY(`tempering_keypoint_id`) REFERENCES info_tempering_keypoint(`id`);
+
+
+
+
+
+ALTER TABLE `craft_curve` ADD CONSTRAINT fk_tempering_id_card
+FOREIGN KEY(`tempering_id`) REFERENCES card_craft_tempering(`id`);
+
+
+ALTER TABLE `craft_curve` ADD CONSTRAINT fk_tempering_id_info
+FOREIGN KEY(`tempering_id`) REFERENCES info_craft_tempering(`id`);
+
+
+
+ALTER TABLE `craft_curve` ADD CONSTRAINT fk_basic_curve_quenching_id
+FOREIGN KEY(`basic_curve_quenching_id`) REFERENCES basic_curve(`id`);
+
+
+ALTER TABLE `craft_curve` ADD CONSTRAINT fk_basic_curve_tempering_id
+FOREIGN KEY(`basic_curve_tempering_id`) REFERENCES basic_curve(`id`);
+
+
+ALTER TABLE `craft_curve` ADD CONSTRAINT fk_basic_curve_normalizing_id
+FOREIGN KEY(`basic_curve_normalizing_id`) REFERENCES basic_curve(`id`);

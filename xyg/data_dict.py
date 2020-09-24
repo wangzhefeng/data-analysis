@@ -12,9 +12,6 @@ SQL_FILE = os.path.join(RESULT_PATH, "xyg_%s.sql" % TIMESTAMP)
 
 
 
-
-
-
 def write_sql_string(sql):
     final_sql_header = "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\n\n"
     with open(SQL_FILE, "a") as f:
