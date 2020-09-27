@@ -5,7 +5,7 @@ import datetime
 
 HOST = "47.98.51.189:3306"
 DATABASE = "xyg_qm"
-DATA_PATH = "/mnt/e/dev/data-analysis/xyg/xyg_0922.xlsx"
+DATA_PATH = "/mnt/e/dev/data-analysis/xyg/xyg数据库数据字典-王哲峰-20200927-v1.4.xlsx"
 RESULT_PATH = "/mnt/e/dev/data-analysis/xyg/result"
 TIMESTAMP = '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
 SQL_FILE = os.path.join(RESULT_PATH, "xyg_%s.sql" % TIMESTAMP)
@@ -20,7 +20,7 @@ def write_sql_string(sql):
 
 
 def get_database_tabel_parameters():
-    table = pd.read_excel(DATA_PATH, sheet_name = "table", header = 0)
+    table = pd.read_excel(DATA_PATH, sheet_name = "table-sql-script-use", header = 0)
     table.reset_index(drop = True)
 
     return table

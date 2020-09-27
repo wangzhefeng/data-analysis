@@ -153,3 +153,9 @@ FOREIGN KEY(`basic_curve_tempering_id`) REFERENCES basic_curve(`id`);
 
 ALTER TABLE `craft_curve` ADD CONSTRAINT fk_basic_curve_normalizing_id
 FOREIGN KEY(`basic_curve_normalizing_id`) REFERENCES basic_curve(`id`);
+
+
+
+
+ALTER TABLE `config_menu` ADD CONSTRAINT fk_category_id
+FOREIGN KEY(`category_id`) REFERENCES config_category(`id`);
