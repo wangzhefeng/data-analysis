@@ -157,5 +157,21 @@ FOREIGN KEY(`basic_curve_normalizing_id`) REFERENCES basic_curve(`id`);
 
 
 
-ALTER TABLE `config_menu` ADD CONSTRAINT fk_category_id
-FOREIGN KEY(`category_id`) REFERENCES config_category(`id`);
+ALTER TABLE `info_tempering_multiregulation_period` ADD CONSTRAINT fk_quenching_pc_id_info
+FOREIGN KEY(`quenching_pc_id`) REFERENCES info_tempering_keypoint_quenching(`id`);
+
+
+
+ALTER TABLE `info_tempering_multiregulation_period` ADD CONSTRAINT fk_tempering_pc_id_info
+FOREIGN KEY(`tempering_pc_id`) REFERENCES info_tempering_keypoint_tempering(`id`);
+
+
+
+
+ALTER TABLE `card_tempering_multiregulation_period` ADD CONSTRAINT fk_quenching_pc_id_card
+FOREIGN KEY(`quenching_pc_id`) REFERENCES card_tempering_keypoint_quenching(`id`);
+
+
+ALTER TABLE `card_tempering_multiregulation_period` ADD CONSTRAINT fk_tempering_pc_id_card
+FOREIGN KEY(`tempering_pc_id`) REFERENCES card_tempering_keypoint_tempering(`id`);
+
