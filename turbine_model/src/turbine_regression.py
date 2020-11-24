@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-
 import os
 import sys
 import numpy as np
@@ -17,13 +14,20 @@ root_path = "e:/dev/data-analysis/turbine_model"
 # linux
 # root_path = "/mnt/e/dev/data-analysis/turbine_model"
 
+
 data_path = os.path.join(root_path, "data")
+result_path = os.path.join(root_path, "result")
+
+
 data_path_0817 = os.path.join(data_path, "0187")
 data_path_0904 = os.path.join(data_path, "0904-0906")
 data_path_0907 = os.path.join(data_path, "0907")
 data_path_0909 = os.path.join(data_path, "0909")
 data_path_0910 = os.path.join(data_path, "0910")
-result_path = os.path.join(root_path, "result")
+data_path_1109 = os.path.join(data_path, "1109")
+data_path_1110 = os.path.join(data_path, "1110")
+
+
 regression_data_path_0817 = os.path.join(result_path, "regression-0817")
 regression_data_path_0904 = os.path.join(result_path, "regression-0904-0906")
 regression_data_path_0907 = os.path.join(result_path, "regression-0907")
@@ -140,6 +144,28 @@ def get_origin_data(period):
         data["eturb_m2_steam_temperature_side"] = eturb_m2_data["ExtCondensTurbineOP.steam_temperature_side"]
         data["eturb_m2_steam_pressure_out"] = eturb_m2_data["ExtCondensTurbineOP.steam_pressure_out"]
         data["eturb_m2_steam_temperature_out"] = eturb_m2_data["ExtCondensTurbineOP.steam_temperature_out"]
+        data["eturb_m2_electricity_generation"] = eturb_m2_data["ExtCondensTurbineOP.electricity_generation"]
+    elif period == 6:
+        eturb_m1_data = pd.read_csv(os.path.join(data_path_1109, "eturb_m1_1min_1109.csv"), header = 0, index_col = None)
+        eturb_m2_data = pd.read_csv(os.path.join(data_path_1109, "eturb_m2_1min_1109.csv"), header = 0, index_col = None)
+        # eturb_m1
+        data["eturb_m1_steam_flow_in"] = eturb_m1_data["ExtCondensTurbineOP.steam_flow_in"]
+        data["eturb_m1_steam_flow_side"] = eturb_m1_data["ExtCondensTurbineOP.steam_flow_side"]
+        data["eturb_m1_electricity_generation"] = eturb_m1_data["ExtCondensTurbineOP.electricity_generation"]
+        # eturb_m2
+        data["eturb_m2_steam_flow_in"] = eturb_m2_data["ExtCondensTurbineOP.steam_flow_in"]
+        data["eturb_m2_steam_flow_side"] = eturb_m2_data["ExtCondensTurbineOP.steam_flow_side"]
+        data["eturb_m2_electricity_generation"] = eturb_m2_data["ExtCondensTurbineOP.electricity_generation"]
+    elif period == 7:
+        eturb_m1_data = pd.read_csv(os.path.join(data_path_1110, "eturb_m1_1min_1110.csv"), header = 0, index_col = None)
+        eturb_m2_data = pd.read_csv(os.path.join(data_path_1110, "eturb_m2_1min_1110.csv"), header = 0, index_col = None)
+        # eturb_m1
+        data["eturb_m1_steam_flow_in"] = eturb_m1_data["ExtCondensTurbineOP.steam_flow_in"]
+        data["eturb_m1_steam_flow_side"] = eturb_m1_data["ExtCondensTurbineOP.steam_flow_side"]
+        data["eturb_m1_electricity_generation"] = eturb_m1_data["ExtCondensTurbineOP.electricity_generation"]
+        # eturb_m2
+        data["eturb_m2_steam_flow_in"] = eturb_m2_data["ExtCondensTurbineOP.steam_flow_in"]
+        data["eturb_m2_steam_flow_side"] = eturb_m2_data["ExtCondensTurbineOP.steam_flow_side"]
         data["eturb_m2_electricity_generation"] = eturb_m2_data["ExtCondensTurbineOP.electricity_generation"]
 
     data = data.reset_index(drop = True)
@@ -328,7 +354,7 @@ def eturb_m2_regression(data, method, is_export_csv = 0):
     return eturb_m2_result_df
 
 
-def eturb_m2_regression_all(data, is_export_csv = 0):
+def eturb_m2_regression_all_without_steam_flow_side(data, is_export_csv = 0):
     eturb_m2_X_temp = np.array([data["eturb_m2_steam_flow_in"]]).T
     eturb_m2_Y_temp = np.array([data["eturb_m2_electricity_generation"]]).reshape(-1, 1)
     eturb_m2_coefs, eturb_m2_intercept, eturb_m2_R2 = regression_func(eturb_m2_X_temp, eturb_m2_Y_temp, fit_intercept = True)
@@ -351,7 +377,7 @@ def eturb_m2_regression_all(data, is_export_csv = 0):
 
     return eturb_m2_temp_result_df
 
-def eturb_m2_regression_all_v2(data, is_export_csv = 0):
+def eturb_m2_regression_all(data, is_export_csv = 0):
     eturb_m2_X_temp = np.array([data["eturb_m2_steam_flow_in"], data["eturb_m2_steam_flow_side"]]).T
     eturb_m2_Y_temp = np.array([data["eturb_m2_electricity_generation"]]).reshape(-1, 1)
     eturb_m2_coefs, eturb_m2_intercept, eturb_m2_R2 = regression_func(eturb_m2_X_temp, eturb_m2_Y_temp, fit_intercept = True)
@@ -375,14 +401,6 @@ def eturb_m2_regression_all_v2(data, is_export_csv = 0):
         eturb_m2_temp_result_df.to_csv(os.path.join(result_path, "eturb_m2_result.csv"), index = None)
 
     return eturb_m2_temp_result_df
-
-
-
-
-
-
-
-
 
 
 def bturb_m1_regression(data, method, is_export_csv = 0):
