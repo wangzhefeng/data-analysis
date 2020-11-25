@@ -7,10 +7,22 @@ import pandas as pd
 from scipy.optimize import minimize
 from sklearn import linear_model
 
-from turbine_electricity_price import electricity_price_ext_preprocessing
-from settings import TURBINE_STEAM_ADJUST_DELTA
-from settings import ETURB_M1_MACHINE_STATUS, ETURB_M2_MACHINE_STATUS, BTURB_M1_MACHINE_STATUS
 
+# 汽轮机单次调整进汽、抽汽量
+TURBINE_STEAM_ADJUST_DELTA = 20
+# 汽轮发电机组停开机状态判断进汽量
+ETURB_M1_MACHINE_STATUS = 10
+ETURB_M2_MACHINE_STATUS = 10
+BTURB_M1_MACHINE_STATUS = 10
+
+
+def electricity_price_ext_preprocessing(electricity_power_ext, electricity_price_buy, electricity_price_sale):
+    """
+    外购电电价处理
+    """
+    electricity_price_ext = electricity_price_buy if electricity_power_ext >= settings.ELECTRICITY_POWER_EXT_SALE_THREAD else electricity_price_sale
+
+    return electricity_price_ext
 
 class Eturb:
     
