@@ -282,10 +282,29 @@ def optimizer(args_obj, args_con, x0):
         x0 = np.asarray(x0),
         method = "SLSQP",
         constraints = cons,
-        options = {
-            # "maxiter": 9,
-            "disp": True
-        }
+        # options = {
+        #     "maxiter": 9,
+        #     "disp": True
+        # }
+    )
+
+    return res
+
+
+def optimizer_n_model(args_obj, args_con, x0, method):
+    """
+    目标函数优化器
+    """
+    cons = contraint(args_con)
+    res = minimize(
+        objective(args_obj),
+        x0 = np.asarray(x0),
+        method = method,
+        constraints = cons,
+        # options = {
+        #     "maxiter": 9,
+        #     "disp": True
+        # }
     )
 
     return res
@@ -421,6 +440,9 @@ def turbine_optimizer_main_model(hp_steam_dayprice,
         # 决策变量初值
         x0 = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         # 优化算法
+        # --------------------------------------
+        # 单模型
+        # --------------------------------------
         result = optimizer(args_obj, args_con, x0)
         object_value_min = result.fun
         optim_status = result.success
@@ -463,11 +485,9 @@ def turbine_optimizer_main_model(hp_steam_dayprice,
             bturb_m1_steam_flow_in_delta = optim_result[7]
             # 建议外购电
             electricity_power_ext_opt = optim_result[1] + electricity_power_ext
-            logging.error("yida_turbine_model_v2.py optim_results1:%s", {
-                "优化状态": optim_status,
-            })
-            logging.error("外购电电价:%s", electricity_price_ext)
-            logging.error("yida_turbine_model_v2.py optim_results2:%s", {
+            logging.error(f"优化状态:{optim_status}")
+            logging.error(f"外购电电价:{electricity_price_ext}")
+            logging.error("优化数据:%s", {
                 "汽机高压蒸汽产进汽量": optim_result[0] + hp_steam,
                 "生产车间外购电电功率": electricity_power_ext_opt,
                 "汽机1自发电发电功率": eturb_m1_electricity_machine_opt,
@@ -479,7 +499,7 @@ def turbine_optimizer_main_model(hp_steam_dayprice,
                 "汽机1抽汽量": eturb_m1_lp_steam_machine_opt,
                 "汽机2抽汽量": eturb_m2_lp_steam_machine_opt,
             })
-            logging.error("yida_turbine_model_v2.py optim_results3:%s", {
+            logging.error("实际数据:%s", {
                 "汽机高压蒸汽产进汽量-实际": hp_steam,
                 "生产车间外购电电功率-实际": electricity_power_ext,
                 "汽机1自发电发电功率-实际": eturb_m1.electricity_generation,
@@ -495,11 +515,10 @@ def turbine_optimizer_main_model(hp_steam_dayprice,
             logging.error(f"优化得到的目标函数最小值1-算法={object_value_min}")
 
             # electricity_price_ext = electricity_price_ext_preprocessing(electricity_power_ext_opt, electricity_price_buy, electricity_price_sale)
-            object_value_min_2 = hp_steam_dayprice * (eturb_m1_hp_steam_machine_opt + eturb_m2_hp_steam_machine_opt + bturb_m1_hp_steam_machine_opt) + electricity_price_ext * electricity_power_ext_opt * 1000
-            logging.error(f"优化得到的目标函数最小值2-算法={object_value_min_2}")
-
-            object_value_min_2 = hp_steam_dayprice * (optim_result[0] + hp_steam) + electricity_price_ext * electricity_power_ext_opt * 1000
-            logging.error(f"优化得到的目标函数最小值3-人工={object_value_min_2}")
+            # object_value_min_2 = hp_steam_dayprice * (eturb_m1_hp_steam_machine_opt + eturb_m2_hp_steam_machine_opt + bturb_m1_hp_steam_machine_opt) + electricity_price_ext * electricity_power_ext_opt * 1000
+            # logging.error(f"优化得到的目标函数最小值2-算法={object_value_min_2}")
+            # object_value_min_2 = hp_steam_dayprice * (optim_result[0] + hp_steam) + electricity_price_ext * electricity_power_ext_opt * 1000
+            # logging.error(f"优化得到的目标函数最小值3-人工={object_value_min_2}")
 
             object_value_actual = hp_steam_dayprice * hp_steam + electricity_price_ext * electricity_power_ext * 1000
             logging.error(f"实际得到的目标函数最小值-人工={object_value_actual}")
@@ -527,57 +546,238 @@ def turbine_optimizer_main_model(hp_steam_dayprice,
             logging.error(f"实际得到的目标函数最小值-人工={object_value_actual}")
     except:
         traceback.print_exc()
-    
-    # --------------------------
-    # result
-    # --------------------------
-    eturb_m1_result = {
-        "hp_steam_machine_opt": eturb_m1_hp_steam_machine_opt,       # 抽凝汽轮发电机组进汽量优化值
-        "lp_steam_machine_opt": eturb_m1_lp_steam_machine_opt,       # 抽凝汽轮发电机组抽汽量优化值
-        "electricity_machine_opt": eturb_m1_electricity_machine_opt, # 抽凝汽轮发电机组发电功率
-        "steam_flow_in_delta": eturb_m1_steam_flow_in_delta,
-    }
-    eturb_m2_result = {
-        "hp_steam_machine_opt": eturb_m2_hp_steam_machine_opt,       # 抽凝汽轮发电机组进汽量优化值
-        "lp_steam_machine_opt": eturb_m2_lp_steam_machine_opt,       # 抽凝汽轮发电机组抽汽量优化值
-        "electricity_machine_opt": eturb_m2_electricity_machine_opt, # 抽凝汽轮发电机组发电功率
-        "steam_flow_in_delta": eturb_m2_steam_flow_in_delta,
-    }
-    bturb_m1_result = {
-        "hp_steam_machine_opt": bturb_m1_hp_steam_machine_opt,       # 背压汽轮发电机组进汽量优化值
-        "electricity_machine_opt": bturb_m1_electricity_machine_opt, # 背压汽轮发电机组发电功率
-        "steam_flow_in_delta": bturb_m1_steam_flow_in_delta,
-    }
-    steampipeline_result = {
-        "object_value_min": object_value_min,
-        "optim_status": 1 if optim_status else 0,
-        "electricity_power_ext_opt": electricity_power_ext_opt,
-    }
-    
-    df = pd.DataFrame({
-        "object_value_min": [object_value_min],
-        "object_value_actual": [object_value_actual],
-        "optim_status": optim_status,
-    })
 
-    return eturb_m1_result, eturb_m2_result, bturb_m1_result, steampipeline_result, df
+
+
+def turbine_optimizer_main_model_n_model(hp_steam_dayprice,
+                                         #  electricity_price_buy,
+                                         #  electricity_price_sale,
+                                         electricity_price_ext,
+                                         steamflow_pred_avg,
+                                         electricity_power_pred_avg,
+                                         lp_steam_throtte, 
+                                         steam_flow_in_array, 
+                                         steam_flow_side_array, 
+                                         electricity_generation_array,
+                                         steam_in_upper_limit_array, 
+                                         steam_in_lower_limit_array,
+                                         steam_out_upper_limit_array, 
+                                         steam_out_lower_limit_array,
+                                         electricity_power_ext_max, 
+                                         electricity_power_ext):
+    # ---------------------------------
+    # 电价处理(外购电、外卖电)
+    # ---------------------------------
+    # try:
+    #     electricity_price_ext = electricity_price_ext_preprocessing(electricity_power_ext, electricity_price_buy, electricity_price_sale)
+    # except:
+    #     traceback.print_exc()
+    # ---------------------------------
+    # 建立汽轮发电机组实例
+    # ---------------------------------
+    try:
+        eturb_m1, eturb_m2, bturb_m1 = create_turbine_instance(steam_flow_in_array)
+        # eturb_m1
+        eturb_m1.steam_flow_side = steam_flow_side_array[0]
+        eturb_m1.electricity_generation = electricity_generation_array[0]
+        eturb_m1.machine_steam_in_upper_limit = steam_in_upper_limit_array[0] * eturb_m1.machine_status
+        eturb_m1.machine_steam_in_lower_limit = steam_in_lower_limit_array[0] * eturb_m1.machine_status
+        eturb_m1.machine_steam_ext_upper_limit = steam_out_upper_limit_array[0] * eturb_m1.machine_status
+        eturb_m1.machine_steam_ext_lower_limit = steam_out_lower_limit_array[0] * eturb_m1.machine_status
+        # eturb_m2
+        eturb_m2.steam_flow_side = steam_flow_side_array[1]
+        eturb_m2.electricity_generation = electricity_generation_array[1]
+        eturb_m2.machine_steam_in_upper_limit = steam_in_upper_limit_array[1] * eturb_m2.machine_status
+        eturb_m2.machine_steam_in_lower_limit = steam_in_lower_limit_array[1] * eturb_m2.machine_status
+        eturb_m2.machine_steam_ext_upper_limit = steam_out_upper_limit_array[1] * eturb_m2.machine_status
+        eturb_m2.machine_steam_ext_lower_limit = steam_out_lower_limit_array[1] * eturb_m2.machine_status
+        # bturb_m1
+        bturb_m1.electricity_generation = electricity_generation_array[2]
+        bturb_m1.machine_steam_in_upper_limit = steam_in_upper_limit_array[2] * bturb_m1.machine_status
+        bturb_m1.machine_steam_in_lower_limit = steam_in_lower_limit_array[2] * bturb_m1.machine_status
+        # 估计汽轮发电机组综合效率
+        eturb_m1.effect_m_g(eturb_m1.machine_status)
+        eturb_m2.effect_m_g(eturb_m2.machine_status)
+        bturb_m1.effect_m_g(bturb_m1.machine_status)
+        hp_steam = eturb_m1.steam_flow_in + eturb_m2.steam_flow_in + bturb_m1.steam_flow_in
+    except:
+        traceback.print_exc()
+    # ---------------------------------
+    # 构造参数
+    # ---------------------------------
+    try:
+        # 目标变量参数
+        args_obj = (
+            hp_steam_dayprice,      # 元/t
+            electricity_price_ext,  # 元/kWh
+            hp_steam,               # t/h
+            electricity_power_ext   # MW
+        )
+        # 约束条件参数
+        args_con = (
+            steamflow_pred_avg, 
+            electricity_power_pred_avg, 
+            lp_steam_throtte,
+            eturb_m1.alpha_1, 
+            eturb_m1.alpha_2, 
+            eturb_m1.beta,
+            eturb_m2.alpha_1, 
+            eturb_m2.alpha_2, 
+            eturb_m2.beta, 
+            bturb_m1.alpha, 
+            bturb_m1.beta,
+            eturb_m1.machine_steam_in_lower_limit, 
+            eturb_m1.machine_steam_in_upper_limit,
+            eturb_m2.machine_steam_in_lower_limit, 
+            eturb_m2.machine_steam_in_upper_limit,
+            bturb_m1.machine_steam_in_lower_limit, 
+            bturb_m1.machine_steam_in_upper_limit,
+            eturb_m1.machine_steam_ext_lower_limit, 
+            eturb_m1.machine_steam_ext_upper_limit,
+            eturb_m2.machine_steam_ext_lower_limit, 
+            eturb_m2.machine_steam_ext_upper_limit,
+            electricity_power_ext_max, 
+            hp_steam,
+            eturb_m1.electricity_generation, 
+            eturb_m2.electricity_generation,
+            bturb_m1.electricity_generation,
+            electricity_power_ext,
+            eturb_m1.steam_flow_in, 
+            eturb_m2.steam_flow_in, 
+            bturb_m1.steam_flow_in,
+            eturb_m1.steam_flow_side, 
+            eturb_m2.steam_flow_side
+        )
+        # 决策变量初值
+        x0 = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        # 优化算法
+        # --------------------------------------
+        # 多模型
+        # --------------------------------------
+        METHODS = [
+            "Nelder-Mead",
+            "Powell",
+            "CG",
+            "BFGS",
+            "Newton-CG",
+            "L-BFGS-B",
+            "TNC",
+            "COBYLA",
+            "SLSQP",
+            "trust-constr",
+            "dogleg",
+            "trust-ncg",
+            "trust-exact",
+            "trust-krylov"
+        ]
+        object_value_min_list = []
+        optim_status_list = []
+        optim_result_list = []
+        for method in METHODS:
+            result = optimizer(args_obj, args_con, x0, method)
+            object_value_min = result.fun
+            optim_status = result.success
+            optim_result = result.x
+            object_value_min_list.append(object_value_min)
+            optim_status_list.append(optim_status)
+            optim_result_list.append(optim_result)
+    except:
+        traceback.print_exc()
+    # ---------------------------------
+    # 优化结果处理
+    # ---------------------------------
+    try:
+        if optim_status:
+            # 建议进汽量
+            eturb_m1_hp_steam_machine_opt = optim_result[5] + eturb_m1.steam_flow_in
+            eturb_m2_hp_steam_machine_opt = optim_result[6] + eturb_m2.steam_flow_in
+            bturb_m1_hp_steam_machine_opt = optim_result[7] + bturb_m1.steam_flow_in
+            # 建议抽汽量
+            eturb_m1_lp_steam_machine_opt = optim_result[8] + eturb_m1.steam_flow_side
+            eturb_m2_lp_steam_machine_opt = optim_result[9] + eturb_m2.steam_flow_side
+            # 建议发电量
+            eturb_m1_electricity_machine_opt = optim_result[2] + eturb_m1.electricity_generation
+            eturb_m2_electricity_machine_opt = optim_result[3] + eturb_m2.electricity_generation
+            bturb_m1_electricity_machine_opt = optim_result[4] + bturb_m1.electricity_generation
+            # 进汽量变化值
+            eturb_m1_steam_flow_in_delta = optim_result[5]
+            eturb_m2_steam_flow_in_delta = optim_result[6]
+            bturb_m1_steam_flow_in_delta = optim_result[7]
+            # 建议外购电
+            electricity_power_ext_opt = optim_result[1] + electricity_power_ext
+            logging.error(f"优化状态:{optim_status}")
+            logging.error(f"外购电电价:{electricity_price_ext}")
+            logging.error("优化数据:%s", {
+                "汽机高压蒸汽产进汽量": optim_result[0] + hp_steam,
+                "生产车间外购电电功率": electricity_power_ext_opt,
+                "汽机1自发电发电功率": eturb_m1_electricity_machine_opt,
+                "汽机2自发电发电功率": eturb_m2_electricity_machine_opt,
+                "汽机3自发电发电功率": bturb_m1_electricity_machine_opt,
+                "汽机1进汽量": eturb_m1_hp_steam_machine_opt,
+                "汽机2进汽量": eturb_m2_hp_steam_machine_opt,
+                "汽机3进汽量": bturb_m1_hp_steam_machine_opt,
+                "汽机1抽汽量": eturb_m1_lp_steam_machine_opt,
+                "汽机2抽汽量": eturb_m2_lp_steam_machine_opt,
+            })
+            logging.error("实际数据:%s", {
+                "汽机高压蒸汽产进汽量-实际": hp_steam,
+                "生产车间外购电电功率-实际": electricity_power_ext,
+                "汽机1自发电发电功率-实际": eturb_m1.electricity_generation,
+                "汽机2自发电发电功率-实际": eturb_m2.electricity_generation,
+                "汽机3自发电发电功率-实际": bturb_m1.electricity_generation,
+                "汽机1进汽量-实际": eturb_m1.steam_flow_in,
+                "汽机2进汽量-实际": eturb_m2.steam_flow_in,
+                "汽机3进汽量-实际": bturb_m1.steam_flow_in,
+                "汽机1抽汽量-实际": eturb_m1.steam_flow_side,
+                "汽机2抽汽量-实际": eturb_m2.steam_flow_side,
+            })
+            # 成本计算
+            logging.error(f"优化得到的目标函数最小值1-算法={object_value_min}")
+
+            # electricity_price_ext = electricity_price_ext_preprocessing(electricity_power_ext_opt, electricity_price_buy, electricity_price_sale)
+            # object_value_min_2 = hp_steam_dayprice * (eturb_m1_hp_steam_machine_opt + eturb_m2_hp_steam_machine_opt + bturb_m1_hp_steam_machine_opt) + electricity_price_ext * electricity_power_ext_opt * 1000
+            # logging.error(f"优化得到的目标函数最小值2-算法={object_value_min_2}")
+            # object_value_min_2 = hp_steam_dayprice * (optim_result[0] + hp_steam) + electricity_price_ext * electricity_power_ext_opt * 1000
+            # logging.error(f"优化得到的目标函数最小值3-人工={object_value_min_2}")
+
+            object_value_actual = hp_steam_dayprice * hp_steam + electricity_price_ext * electricity_power_ext * 1000
+            logging.error(f"实际得到的目标函数最小值-人工={object_value_actual}")
+        else:
+            # 建议进汽量
+            eturb_m1_hp_steam_machine_opt = eturb_m1.steam_flow_in
+            eturb_m2_hp_steam_machine_opt = eturb_m2.steam_flow_in
+            bturb_m1_hp_steam_machine_opt = bturb_m1.steam_flow_in
+            # 建议抽汽量
+            eturb_m1_lp_steam_machine_opt = eturb_m1.steam_flow_side
+            eturb_m2_lp_steam_machine_opt = eturb_m2.steam_flow_side
+            # 建议发电量
+            eturb_m1_electricity_machine_opt = eturb_m1.electricity_generation
+            eturb_m2_electricity_machine_opt = eturb_m2.electricity_generation
+            bturb_m1_electricity_machine_opt = bturb_m1.electricity_generation
+            # 进汽量变化值
+            eturb_m1_steam_flow_in_delta = 0
+            eturb_m2_steam_flow_in_delta = 0
+            bturb_m1_steam_flow_in_delta = 0
+            electricity_power_ext_opt = electricity_power_ext
+            # 成本计算
+            object_value_min = hp_steam_dayprice * hp_steam + electricity_price_ext * electricity_power_ext * 1000
+            logging.error(f"优化得到的目标函数最小值-人工={object_value_min}")
+            object_value_actual = hp_steam_dayprice * hp_steam + electricity_price_ext * electricity_power_ext * 1000
+            logging.error(f"实际得到的目标函数最小值-人工={object_value_actual}")
+    except:
+        traceback.print_exc()
+
+
 
 
 def get_result(data):
     final_result = pd.DataFrame()
     for i in range(len(data)):
-        eturb_m1_result, \
-        eturb_m2_result, \
-        bturb_m1_result, \
-        steampipeline_result, df = turbine_optimizer_main_model(
+        turbine_optimizer_main_model(
             hp_steam_dayprice = 95.788,
             electricity_price_ext = data["electricity_price_ext"].iloc[i],
-            # steamflow_pred_avg = data["lp_steam_pred_avg_adjust"].iloc[i],
-            steamflow_pred_avg = data["steam_flow_side_eturb_m1"].iloc[i] + data["steam_flow_side_eturb_m2"].iloc[i],
-            # electricity_power_pred_avg = data["electricity_power_pred_avg_adjust"].iloc[i],
-            electricity_power_pred_avg = data["electricity_generation_eturb_m1"].iloc[i] + \
-                                        data["electricity_generation_eturb_m2"].iloc[i] + \
-                                        data["electricity_power_ext"].iloc[i], 
+            steamflow_pred_avg = data["lp_steam_pred_avg_adjust"].iloc[i],
+            electricity_power_pred_avg = data["electricity_power_pred_avg_adjust"].iloc[i],
             lp_steam_throtte = 0,
             steam_flow_in_array = [
                 data["steam_flow_in_eturb_m1"].iloc[i], 
@@ -597,22 +797,18 @@ def get_result(data):
             steam_out_upper_limit_array = [40, 40],
             steam_out_lower_limit_array = [15, 15],
             electricity_power_ext_max = 8,
-            electricity_power_ext = data["electricity_power_ext"].iloc[i]
-        )
+            electricity_power_ext = data["electricity_power_ext"].iloc[i])
         final_result = pd.concat([final_result, df], axis = 0)
     print(final_result)
     final_result.to_excel("/mnt/e/dev/data-download/yida_test/不超过上下限-修改外购电电功率约束条件-不收敛时返回当前负荷-电力蒸汽实际值1109-2.xlsx")
 
 
 def get_result_i(data, i):
-    eturb_m1_result, \
-    eturb_m2_result, \
-    bturb_m1_result, \
-    steampipeline_result, df = turbine_optimizer_main_model(
+    turbine_optimizer_main_model(
         hp_steam_dayprice = 95.788,
         electricity_price_ext = data["electricity_price_ext"].iloc[i],
-        steamflow_pred_avg = data["lp_steam_pred_avg"].iloc[i],
-        electricity_power_pred_avg = data["electricity_power_pred_avg"].iloc[i],
+        steamflow_pred_avg = data["lp_steam_pred_avg_adjust"].iloc[i],
+        electricity_power_pred_avg = data["electricity_power_pred_avg_adjust"].iloc[i],
         lp_steam_throtte = 0,
         steam_flow_in_array = [
             data["steam_flow_in_eturb_m1"].iloc[i], 
@@ -632,8 +828,7 @@ def get_result_i(data, i):
         steam_out_upper_limit_array = [40, 40],
         steam_out_lower_limit_array = [15, 15],
         electricity_power_ext_max = 8,
-        electricity_power_ext = data["electricity_power_ext"].iloc[i]
-    )
+        electricity_power_ext = data["electricity_power_ext"].iloc[i])
 
 
 
@@ -663,7 +858,7 @@ if __name__ == "__main__":
     # )
     data_1109 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109.csv")
     data_1110 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1110/result-1110.csv")
-    data_1109_2 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/src/result-1109-2.csv")
-    get_result(data = data_1109_2)
-    # get_result_i(data_1109, 848)
+    data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
+    # get_result(data = data_1109_2)
+    get_result_i(data_1109_dropna, 848)
 
