@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from sklearn import linear_model
-from Eturb import Eturb
-from Bturb import Bturb
-from turbine_optimizer import objective, contraint, optimizer, optimizer_n_model
+from .Eturb import Eturb
+from .Bturb import Bturb
+from .turbine_optimizer import objective, contraint, optimizer, optimizer_n_model
 
 
 # 汽轮发电机组停开机状态判断进汽量

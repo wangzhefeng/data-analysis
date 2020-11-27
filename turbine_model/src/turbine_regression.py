@@ -10,11 +10,11 @@ import seuif97
 
 
 # win
-# root_path = "e:/dev/data-analysis/turbine_model"
+root_path = "e:/dev/data-analysis/turbine_model"
 # linux
 # root_path = "/mnt/e/dev/data-analysis/turbine_model"
 # mac
-root_path = "/Users/zfwang/work/dev/data-analysis/turbine_model"
+# root_path = "/Users/zfwang/work/dev/data-analysis/turbine_model"
 
 data_path = os.path.join(root_path, "data")
 result_path = os.path.join(root_path, "result")
