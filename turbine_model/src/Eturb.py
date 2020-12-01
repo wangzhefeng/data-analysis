@@ -27,26 +27,26 @@ class Eturb:
                 # self.alpha_2 = -0.193
                 # self.beta = 0
                 # v2
+                # self.alpha_1 = 0.186
+                # self.alpha_2 = -0.104
+                # self.beta = 0
+                # v3
                 self.alpha_1 = 0.173
                 self.alpha_2 = -0.0852
                 self.beta = -0.3293
-                # 1109
-                # self.alpha_1 = 0.
-                # self.alpha_2 = -0.036
-                # self.beta = -0.3293
             elif self.instance == "eturb_m2":
                 # v1
                 # self.alpha_1 = 0.236
                 # self.alpha_2 = -0.193
                 # self.beta = 0
                 # v2
+                # self.alpha_1 = 0.205
+                # self.alpha_2 = -0.096
+                # self.beta = 0
+                # v3
                 self.alpha_1 = 0.1823
                 self.alpha_2 = -0.1065
                 self.beta = -0.3139
-                # 1109
-                # self.alpha_1 = 0.187
-                # self.alpha_2 = -0.114
-                # self.beta = -0.571
         else:
             self.alpha_1 = 0.01
             self.alpha_2 = 0.01
@@ -159,10 +159,3 @@ class Eturb_V1:
 
     def machine_statu(self):
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
-
-
-
-if __name__ == "__main__":
-    a = np.array([0, 1, 2])
-    b = np.array([1, 2, 3])
-    print(a * b)

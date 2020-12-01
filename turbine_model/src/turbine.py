@@ -5,9 +5,14 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from sklearn import linear_model
-from .Eturb import Eturb
-from .Bturb import Bturb
-from .turbine_optimizer import objective, contraint, optimizer, optimizer_n_model
+# cam
+from Eturb import Eturb
+from Bturb import Bturb
+from turbine_optimizer import objective, contraint, optimizer
+# wsl
+# from .Eturb import Eturb
+# from .Bturb import Bturb
+# from .turbine_optimizer import objective, contraint, optimizer
 
 
 # 汽轮发电机组停开机状态判断进汽量
@@ -211,14 +216,46 @@ def turbine_optimizer_main_model(hp_steam_dayprice, electricity_price_ext,
         logging.error("优化得到的目标函数最小值 = %s", object_value_min)
         object_value_actual = hp_steam_dayprice * hp_steam + electricity_price_ext * electricity_power_ext * 1000
         logging.error("实际得到的目标函数最小值 = %s", object_value_actual)
+    
+    df = pd.DataFrame({
+        "steam_flow_in_eturb_m1": [eturb_m1.steam_flow_in],
+        "hp_steam_machine_opt_eturb_m1": [eturb_m1_hp_steam_machine_opt],
+        "steam_flow_side_eturb_m1": [eturb_m1.steam_flow_side],
+        "lp_steam_machine_opt_eturb_m1": [eturb_m1_lp_steam_machine_opt],
+        "electricity_generation_eturb_m1": [eturb_m1.electricity_generation],
+        "electricity_machine_opt_eturb_m1": [eturb_m1_electricity_machine_opt],
+        "steam_flow_in_eturb_m2": [eturb_m2.steam_flow_in],
+        "hp_steam_machine_opt_eturb_m2": [eturb_m2_hp_steam_machine_opt],
+        "steam_flow_side_eturb_m2": [eturb_m2.steam_flow_side],
+        "lp_steam_machine_opt_eturb_m2": [eturb_m2_lp_steam_machine_opt],
+        "electricity_generation_eturb_m2": [eturb_m2.electricity_generation],
+        "electricity_machine_opt_eturb_m2": [eturb_m2_electricity_machine_opt],
+        "steam_flow_in_eturb": [eturb_m1.steam_flow_in + eturb_m2.steam_flow_in],
+        "hp_steam_machine_opt_eturb": [eturb_m1_hp_steam_machine_opt + eturb_m2_hp_steam_machine_opt],
+        "steam_flow_side_eturb": [eturb_m1.steam_flow_side + eturb_m2.steam_flow_side],
+        "lp_steam_machine_opt_eturb": [eturb_m1_lp_steam_machine_opt + eturb_m2_lp_steam_machine_opt],
+        "electricity_generation_eturb": [eturb_m1.electricity_generation + eturb_m2.electricity_generation],
+        "electricity_machine_opt_eturb": [eturb_m1_electricity_machine_opt + eturb_m2_electricity_machine_opt],
+        "electricity_power_ext": [electricity_power_ext],
+        "electricity_power_ext_opt": [electricity_power_ext_opt],
+        "object_value_min": [object_value_min],
+        "object_value_actual": [object_value_actual],
+        "optim_status": [optim_status],
+    })
+
+    return df
 
 
 def get_result(data):
     final_result = pd.DataFrame()
     for i in range(len(data)):
-        turbine_optimizer_main_model(
+        df = turbine_optimizer_main_model(
             hp_steam_dayprice = 95.788,
             electricity_price_ext = data["electricity_price_ext"].iloc[i],
+            # 算法6
+            # steamflow_pred_avg = data["lp_steam_pred_avg"].iloc[i],
+            # electricity_power_pred_avg = data["electricity_power_pred_avg"].iloc[i],
+            # 算法8
             steamflow_pred_avg = data["lp_steam_pred_avg_adjust"].iloc[i],
             electricity_power_pred_avg = data["electricity_power_pred_avg_adjust"].iloc[i],
             lp_steam_throtte = 0,
@@ -242,7 +279,27 @@ def get_result(data):
             electricity_power_ext_max = 8,
             electricity_power_ext = data["electricity_power_ext"].iloc[i])
         final_result = pd.concat([final_result, df], axis = 0)
-    final_result.to_excel("/mnt/e/dev/data-download/yida_test/不超过上下限-修改外购电电功率约束条件-不收敛时返回当前负荷-电力蒸汽实际值1109-2.xlsx")
+        final_result["outlet_steam_flow_boiler_m1"] = data["outlet_steam_flow_boiler_m1"].iloc[i]
+        final_result["hp_steam_boiler_opt_array_boiler_m1"] = data["hp_steam_boiler_opt_array_boiler_m1"].iloc[i]
+        final_result["outlet_steam_flow_boiler_m3"] = data["outlet_steam_flow_boiler_m3"].iloc[i]
+        final_result["hp_steam_boiler_opt_array_boiler_m3"] = data["hp_steam_boiler_opt_array_boiler_m3"].iloc[i]
+        final_result["outlet_steam_flow_boiler"] = data["outlet_steam_flow_boiler_m1"].iloc[i] + data["outlet_steam_flow_boiler_m3"].iloc[i]
+        final_result["hp_steam_boiler_opt_array_boiler"] = data["hp_steam_boiler_opt_array_boiler_m1"].iloc[i] + data["hp_steam_boiler_opt_array_boiler_m3"].iloc[i]
+        # 算法6
+        # final_result["steamflow_pred_avg"] = data["lp_steam_pred_avg"].iloc[i]
+        # final_result["electricity_power_pred_avg"] = data["electricity_power_pred_avg"].iloc[i]
+        # 算法8
+        final_result["steamflow_pred_avg"] = data["lp_steam_pred_avg_adjust"].iloc[i]
+        final_result["electricity_power_pred_avg"] = data["electricity_power_pred_avg_adjust"].iloc[i]
+    # ------------
+    # wsl
+    # ------------
+    # final_result.to_excel("/mnt/e/dev/data-download/yida_test/不超过上下限-修改外购电电功率约束条件-不收敛时返回当前负荷-电力蒸汽实际值1109-2.xlsx")
+    # ------------
+    # cam
+    # ------------
+    # final_result.to_excel("/Users/zfwang/work/dev/data-analysis/turbine_model/result/溢达数据-算法-06.xlsx")
+    final_result.to_excel("/Users/zfwang/work/dev/data-analysis/turbine_model/result/溢达数据-算法-08.xlsx")
 
 
 def get_result_i(data, i):
@@ -273,20 +330,21 @@ def get_result_i(data, i):
         electricity_power_ext = data["electricity_power_ext"].iloc[i])
 
 
-
-
-
 if __name__ == "__main__":
+    # ----------
     # wsl
+    # ----------
     # data_1109 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109.csv")
     # data_1110 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1110/result-1110.csv")
     # data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
-    
+    # ----------
     # cam
+    # ----------
     data_1109 = pd.read_csv("/Users/zfwang/work/dev/data-analysis/turbine_model/data/1109/result-1109.csv")
     data_1110 = pd.read_csv("/Users/zfwang/work/dev/data-analysis/turbine_model/data/1110/result-1110.csv")
     data_1109_dropna = pd.read_csv("/Users/zfwang/work/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
-    
-    
-    # get_result(data = data_1109_2)
-    get_result_i(data_1109_dropna, 848)
+    # ----------
+    #
+    # ----------
+    get_result(data = data_1109_dropna)
+    # get_result_i(data_1109_dropna, 848)
