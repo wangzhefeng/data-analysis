@@ -81,6 +81,8 @@ def turbine_optimizer_main_model(hp_steam_dayprice, electricity_price_ext,
     bturb_m1.effect_m_g(bturb_m1.machine_status)
     # 高压蒸汽进汽总量
     hp_steam = eturb_m1.steam_flow_in + eturb_m2.steam_flow_in + bturb_m1.steam_flow_in
+    #TODO test
+    # hp_steam = None
     # ---------------------------------
     # 构造参数
     # ---------------------------------
@@ -277,7 +279,8 @@ def get_result(data):
             steam_out_upper_limit_array = [40, 40],
             steam_out_lower_limit_array = [15, 15],
             electricity_power_ext_max = 8,
-            electricity_power_ext = data["electricity_power_ext"].iloc[i])
+            electricity_power_ext = data["electricity_power_ext"].iloc[i]
+        )
         final_result = pd.concat([final_result, df], axis = 0)
         final_result["outlet_steam_flow_boiler_m1"] = data["outlet_steam_flow_boiler_m1"].iloc[i]
         final_result["hp_steam_boiler_opt_array_boiler_m1"] = data["hp_steam_boiler_opt_array_boiler_m1"].iloc[i]
@@ -303,7 +306,7 @@ def get_result(data):
 
 
 def get_result_i(data, i):
-    turbine_optimizer_main_model(
+    df = turbine_optimizer_main_model(
         hp_steam_dayprice = 95.788,
         electricity_price_ext = data["electricity_price_ext"].iloc[i],
         steamflow_pred_avg = data["lp_steam_pred_avg_adjust"].iloc[i],
@@ -322,12 +325,13 @@ def get_result_i(data, i):
             data["electricity_generation_eturb_m2"].iloc[i], 
             0
         ],
-        steam_in_upper_limit_array = [90, 90, 75],
+        steam_in_upper_limit_array = [80, 80, 75],
         steam_in_lower_limit_array = [70, 70, 20],
-        steam_out_upper_limit_array = [40, 40],
+        steam_out_upper_limit_array = [30, 40],
         steam_out_lower_limit_array = [15, 15],
         electricity_power_ext_max = 8,
-        electricity_power_ext = data["electricity_power_ext"].iloc[i])
+        electricity_power_ext = data["electricity_power_ext"].iloc[i]
+    )
 
 
 if __name__ == "__main__":

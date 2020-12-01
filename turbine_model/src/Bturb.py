@@ -47,7 +47,9 @@ class Bturb_V1:
         self.__dict__.update(kwargs)
         self.electricity_power = np.nan
         self.machine_status = np.nan
-        self.parameters = []
+        self.parameters_simple = []
+        self.parameters_enthalpy = []
+        self.parameters_complex = []
 
     def regression_simple(self, steam_flow_in_history, electricity_generation_history, machine_statu):
         X = np.array([steam_flow_in_history]).T
@@ -56,12 +58,12 @@ class Bturb_V1:
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
             coefs = reg.coef_
             intercept = reg.intercept_
-            self.parameters = [coefs[0][0], intercept[0]]
+            self.parameters_simple = [coefs[0][0], intercept[0]]
         else:
-            self.parameters = [0, 0]
+            self.parameters_simple = [0, 0]
     
     def electricity_sample(self, steam_flow_in):
-        self.electricity_power = self.parameters * np.array([steam_flow_in, 1])
+        self.electricity_power = self.parameters_simple * np.array([steam_flow_in, 1])
 
 
     def regression_enthalpy(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history, 
@@ -76,15 +78,15 @@ class Bturb_V1:
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
             coefs = reg.coef_
             intercept = reg.intercept_
-            self.parameters = [coefs[0][0], intercept[0]]
+            self.parameters_enthalpy = [coefs[0][0], intercept[0]]
         else:
-            self.parameters = [0, 0]
+            self.parameters_enthalpy = [0, 0]
 
     def electricity_enthalpy(self, steam_flow_in, steam_pressure_in, steam_temperature_in, steam_pressure_side, steam_temperature_side):
         eturb_h0 = seuif97.pt2h(steam_pressure_in, steam_temperature_in)
         eturb_h1 = seuif97.pt2h(steam_pressure_side, steam_temperature_side)
         x_value = (steam_flow_in * (eturb_h0 - eturb_h1)) / 3600
-        self.electricity_power = self.parameters * np.array([x_value, 1])
+        self.electricity_power = self.parameters_enthalpy * np.array([x_value, 1])
 
     
     def regression_complex(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history, 
@@ -103,15 +105,15 @@ class Bturb_V1:
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
             coefs = reg.coef_
             intercept = reg.intercept_
-            self.parameters = [coefs[0][i] for i in len(coefs[0])]
-            self.parameters.appned(intercept[0])
+            self.parameters_complex = [coefs[0][i] for i in len(coefs[0])]
+            self.parameters_complex.appned(intercept[0])
         else:
-            self.parameters = [0, 0, 0, 0, 0, 0, 0]
+            self.parameters_complex = [0, 0, 0, 0, 0, 0, 0]
 
     def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
                             steam_pressure_out, steam_temperature_out,
                             steam_flow_side, steam_pressure_side, steam_temperature_side):
-        self.electricity_power = self.parameters * np.array([
+        self.electricity_power = self.parameters_complex * np.array([
             steam_flow_in,
             steam_pressure_in,
             steam_temperature_in,
