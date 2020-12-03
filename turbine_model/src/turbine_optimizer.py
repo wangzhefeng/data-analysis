@@ -247,7 +247,9 @@ def contraint_v1(args, model = "simple"):
     eturb_m2_steam_flow_side_pressure_current, \
     eturb_m2_steam_flow_side_temperature_current, \
     bturb_m1_steam_flow_side_pressure_current, \
-    bturb_m1_steam_flow_side_temperature_current = args
+    bturb_m1_steam_flow_side_temperature_current,
+    eturb_m1_steam_flow_out_pressure_current, \
+    eturb_m1_steam_flow_out_temperature_current = args
 
     # ----------------------
     # 外购电约束条件 version 1
@@ -280,31 +282,52 @@ def contraint_v1(args, model = "simple"):
         turbine_regression_cons = (
             # 1#汽机发电
             # {"type": "eq", "fun": lambda x: eturb_m1_alpha_1 * x[5] + eturb_m1_alpha_2 * x[8] + eturb_m1_beta - x[2]},
-            {"type": "eq", "fun": lambda x: eturb_m1_parameter_simple * np.array([x[5], x[8], x[2]])},
+            {"type": "eq", "fun": lambda x: eturb_m1_parameter_simple * np.array([x[5], x[8], 1]) - x[2]},
             # 2#汽机发电
             # {"type": "eq", "fun": lambda x: eturb_m2_alpha_1 * x[6] + eturb_m2_alpha_2 * x[9] + eturb_m2_beta - x[3]},
-            {"type": "eq", "fun": lambda x: eturb_m2_parameter_simple * np.array([x[6], x[9], x[3]])},
+            {"type": "eq", "fun": lambda x: eturb_m2_parameter_simple * np.array([x[6], x[9], 1]) - x[3]},
             # 3#汽机发电
             # {"type": "eq", "fun": lambda x: bturb_m1_alpha * x[7] + bturb_m1_beta - x[4]},
-            {"type": "eq", "fun": lambda x: bturb_m1_parameter_simple * np.array([x[7], x[4]])},
+            {"type": "eq", "fun": lambda x: bturb_m1_parameter_simple * np.array([x[7], 1]) - x[4]},
         )
     elif model == "enthalpy":
         turbine_regression_cons = (
             # 1#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m1_parameter_enthalpy * np.array([x[5], x[8], x[2]])},
+            {"type": "eq", "fun": lambda x: eturb_m1_parameter_enthalpy * np.array([x[5], x[8], 1]) - x[2]},
             # 2#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m2_parameter_enthalpy * np.array([x[6], x[9], x[3]])},
+            {"type": "eq", "fun": lambda x: eturb_m2_parameter_enthalpy * np.array([x[6], x[9], 1]) - x[3]},
             # 3#汽机发电
-            {"type": "eq", "fun": lambda x: bturb_m1_parameter_enthalpy * np.array([x[7], x[4]])},
+            {"type": "eq", "fun": lambda x: bturb_m1_parameter_enthalpy * np.array([x[7], 1]) - x[4]},
         )
     elif model == "complex":
         turbine_regression_cons = (
             # 1#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m1_parameter_complex * np.array([x[5], x[8], x[2]])},
+            {"type": "eq", "fun": lambda x: eturb_m1_parameter_complex * np.array([x[5], 
+                                                                                  eturb_m1_steam_flow_in_pressure_current, 
+                                                                                  eturb_m1_steam_flow_in_temperature_current,
+                                                                                  eturb_m1_steam_flow_out_pressure_current, 
+                                                                                  eturb_m1_steam_flow_out_temperature_current,
+                                                                                  x[8], 
+                                                                                  eturb_m1_steam_flow_side_pressure_current, 
+                                                                                  eturb_m1_steam_flow_side_temperature_current,
+                                                                                  1]) - x[2]},
             # 2#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m2_parameter_complex * np.array([x[6], x[9], x[3]])},
+            {"type": "eq", "fun": lambda x: eturb_m2_parameter_complex * np.array([x[6], 
+                                                                                   eturb_m2_steam_flow_in_pressure_current, 
+                                                                                   eturb_m2_steam_flow_in_temperature_current,
+                                                                                   eturb_m2_steam_flow_out_pressure_current, 
+                                                                                   eturb_m2_steam_flow_out_temperature_current,
+                                                                                   x[9], 
+                                                                                   eturb_m2_steam_flow_side_pressure_current, 
+                                                                                   eturb_m2_steam_flow_side_temperature_current,
+                                                                                   1]) - x[3]},
             # 3#汽机发电
-            {"type": "eq", "fun": lambda x: bturb_m1_parameter_complex * np.array([x[7], x[4]])},
+            {"type": "eq", "fun": lambda x: bturb_m1_parameter_complex * np.array([x[7], 
+                                                                                   bturb_m1_steam_flow_in_pressure_current, 
+                                                                                   bturb_m1_steam_flow_in_temperature_current,
+                                                                                   bturb_m1_steam_flow_side_pressure_current,
+                                                                                   bturb_m1_steam_flow_side_temperature_current,
+                                                                                   1]) - x[4]},
         )
 
     cons = (

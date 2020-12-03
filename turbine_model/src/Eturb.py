@@ -132,8 +132,7 @@ class Eturb_V1:
                 steam_temperature_out_history,
                 steam_flow_side_history,
                 steam_pressure_side_history,
-                steam_temperature_side_history,
-                electricity_generation_history
+                steam_temperature_side_history
             ]).T
             Y = np.array(electricity_generation_history).reshape(-1, 1)
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
@@ -147,6 +146,7 @@ class Eturb_V1:
     def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
                             steam_pressure_out, steam_temperature_out,
                             steam_flow_side, steam_pressure_side, steam_temperature_side):
+        #TODO
         self.electricity_power = self.parameters_complex * np.array([
             steam_flow_in,
             steam_pressure_in,
@@ -161,3 +161,4 @@ class Eturb_V1:
 
     def machine_statu(self):
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
+

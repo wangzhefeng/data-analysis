@@ -113,6 +113,7 @@ class Bturb_V1:
     def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
                             steam_pressure_out, steam_temperature_out,
                             steam_flow_side, steam_pressure_side, steam_temperature_side):
+        #TODO
         self.electricity_power = self.parameters_complex * np.array([
             steam_flow_in,
             steam_pressure_in,
