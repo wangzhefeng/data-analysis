@@ -56,5 +56,5 @@
 // }
 
 {
-    "python.pythonPath": "/Users/zfwang/.virtualenv/pysci/bin/python"
+    "python.pythonPath": "/mnt/e/Envs/work/bin/python"
 }

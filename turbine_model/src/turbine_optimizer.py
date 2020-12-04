@@ -189,7 +189,7 @@ def optimizer(args_obj, args_con, x0):
 
 
 
-def contraint_v1(args, model = "simple"):
+def contraint_v2(args, model):
     """
     约束条件
     (hp_steam_current + x[0])                       : 3台汽机高压蒸汽进汽量, t/h
@@ -199,7 +199,7 @@ def contraint_v1(args, model = "simple"):
     (bturb_m1_electricity_generation_current + x[4]): #3 汽机自发电发电功率, MWh
     (eturb_m1_steam_flow_in_current + x[5])         : #1 汽机进汽量, t/h
     (eturb_m2_steam_flow_in_current + x[6])         : #2 汽机进汽量, t/h
-    (bturb_m1_steam_flow_in_current + x[7])         : #3 汽机进汽量, t/h
+    (btrb_m1_steam_flow_in_current + x[7])         : #3 汽机进汽量, t/h
     (eturb_m1_steam_flow_side_current + x[8])       : #1 汽机抽汽量, t/h
     (eturb_m2_steam_flow_side_current + x[9])       : #2 汽机抽汽量, t/h
     """
@@ -247,9 +247,19 @@ def contraint_v1(args, model = "simple"):
     eturb_m2_steam_flow_side_pressure_current, \
     eturb_m2_steam_flow_side_temperature_current, \
     bturb_m1_steam_flow_side_pressure_current, \
-    bturb_m1_steam_flow_side_temperature_current,
+    bturb_m1_steam_flow_side_temperature_current, \
     eturb_m1_steam_flow_out_pressure_current, \
-    eturb_m1_steam_flow_out_temperature_current = args
+    eturb_m1_steam_flow_out_temperature_current, \
+    eturb_m2_steam_flow_out_pressure_current, \
+    eturb_m2_steam_flow_out_temperature_current, \
+    eturb_m1_h0, \
+    eturb_m1_hc, \
+    eturb_m1_h1,\
+    eturb_m2_h0, \
+    eturb_m2_hc, \
+    eturb_m2_h1, \
+    bturb_m1_h0, \
+    bturb_m1_h1 = args
 
     # ----------------------
     # 外购电约束条件 version 1
@@ -293,11 +303,11 @@ def contraint_v1(args, model = "simple"):
     elif model == "enthalpy":
         turbine_regression_cons = (
             # 1#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m1_parameter_enthalpy * np.array([x[5], x[8], 1]) - x[2]},
+            {"type": "eq", "fun": lambda x: eturb_m1_parameter_enthalpy * np.array([(x[5] * (eturb_m1_h0 - eturb_m1_hc) + x[8] * (eturb_m1_hc - eturb_m1_h1)) / 3600, 1]) - x[2]},
             # 2#汽机发电
-            {"type": "eq", "fun": lambda x: eturb_m2_parameter_enthalpy * np.array([x[6], x[9], 1]) - x[3]},
+            {"type": "eq", "fun": lambda x: eturb_m2_parameter_enthalpy * np.array([(x[6] * (eturb_m1_h0 - eturb_m1_hc) + x[9] * (eturb_m1_hc - eturb_m1_h1)) / 3600, 1]) - x[3]},
             # 3#汽机发电
-            {"type": "eq", "fun": lambda x: bturb_m1_parameter_enthalpy * np.array([x[7], 1]) - x[4]},
+            {"type": "eq", "fun": lambda x: bturb_m1_parameter_enthalpy * np.array([(x[7] * (bturb_m1_h0 - bturb_m1_h1)) / 3600, 1]) - x[4]},
         )
     elif model == "complex":
         turbine_regression_cons = (
@@ -397,3 +407,22 @@ def contraint_v1(args, model = "simple"):
     cons = cons + electricity_power_ext_cons + turbine_regression_cons
 
     return cons
+
+
+def optimizer_v2(args_obj, args_con, x0, method):
+    """
+    目标函数优化器
+    """
+    cons = contraint_v2(args_con, method)
+    res = minimize(
+        objective(args_obj),
+        x0 = np.asarray(x0),
+        method = "SLSQP",
+        constraints = cons,
+        # options = {
+        #     "maxiter": 9,
+        #     "disp": True
+        # }
+    )
+
+    return res

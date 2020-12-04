@@ -59,7 +59,7 @@ class Eturb:
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
 
 
-class Eturb_V1:
+class Eturb_V2:
     """
     抽凝汽轮发电机组
     """
@@ -111,10 +111,10 @@ class Eturb_V1:
     def electricity_enthalpy(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
                              steam_pressure_out, steam_temperature_out,
                              steam_flow_side, steam_pressure_side, steam_temperature_side):
-        eturb_h0 = seuif97.pt2h(steam_pressure_in, steam_temperature_in)
-        eturb_hc = seuif97.pt2h(steam_pressure_out, steam_temperature_out)
-        eturb_h1 = seuif97.pt2h((101 - steam_pressure_side) / 1000, steam_temperature_side)
-        eturb_h1_2 = seuif97.px2h((101 - steam_pressure_side) / 1000, steam_temperature_side)
+        self.eturb_h0 = seuif97.pt2h(steam_pressure_in, steam_temperature_in)
+        self.eturb_hc = seuif97.pt2h(steam_pressure_out, steam_temperature_out)
+        self.eturb_h1 = seuif97.pt2h((101 - steam_pressure_side) / 1000, steam_temperature_side)
+        self.eturb_h1_2 = seuif97.px2h((101 - steam_pressure_side) / 1000, steam_temperature_side)
         x_value = (steam_flow_in * (eturb_h0 - eturb_hc) + steam_flow_side * (eturb_hc - eturb_h1)) / 3600
         self.electricity_power = self.parameters_enthalpy * np.array([x_value, 1])
 
