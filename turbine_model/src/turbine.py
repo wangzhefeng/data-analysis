@@ -5,14 +5,9 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from sklearn import linear_model
-# cam
-# from Eturb import Eturb
-# from Bturb import Bturb
-# from turbine_optimizer import objective, contraint, optimizer
-# wsl
-from .Eturb import Eturb
-from .Bturb import Bturb
-from .turbine_optimizer import objective, contraint, optimizer
+from Eturb import Eturb
+from Bturb import Bturb
+from turbine_optimizer import objective, contraint, optimizer
 
 
 # 汽轮发电机组停开机状态判断进汽量
@@ -305,6 +300,44 @@ def get_result(data):
     final_result.to_excel("/Users/zfwang/work/dev/data-analysis/turbine_model/result/溢达数据-算法-08.xlsx")
 
 
+
+
+def unit_test():
+    """
+
+    """
+    df = turbine_optimizer_main_model(
+        hp_steam_dayprice = 95.788,
+        electricity_price_ext = 0.88,
+        steamflow_pred_avg = 68,
+        electricity_power_pred_avg = 19.7,
+        lp_steam_throtte = 0,
+        steam_flow_in_array = [
+            63, 
+            47, 
+            40
+        ],
+        steam_flow_side_array = [
+            22.36, 
+            0
+        ],
+        electricity_generation_array = [
+            9.17, 
+            9.43, 
+            1.8
+        ],
+        steam_in_upper_limit_array = [90, 90, 90],
+        steam_in_lower_limit_array = [0, 0, 0],
+        steam_out_upper_limit_array = [40, 0],
+        steam_out_lower_limit_array = [0, 0],
+        electricity_power_ext_max = 8,
+        electricity_power_ext = 4
+    )
+
+
+
+
+
 def get_result_i(data, i):
     df = turbine_optimizer_main_model(
         hp_steam_dayprice = 95.788,
@@ -340,7 +373,7 @@ if __name__ == "__main__":
     # ----------
     # data_1109 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109.csv")
     # data_1110 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1110/result-1110.csv")
-    data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
+    # data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
     # ----------
     # cam
     # ----------
@@ -350,5 +383,6 @@ if __name__ == "__main__":
     # ----------
     #
     # ----------
-    get_result(data = data_1109_dropna)
+    # get_result(data = data_1109_dropna)
     # get_result_i(data_1109_dropna, 848)
+    unit_test()

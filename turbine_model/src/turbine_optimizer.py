@@ -90,8 +90,9 @@ def contraint(args):
     # ----------------------
     electricity_power_ext_cons = (
         # 外购电电功率<外购电最大电功率
-        {"type": "ineq", "fun": lambda x: electricity_power_ext_max - (electricity_power_ext_current + x[1])},
-        # {"type": "ineq", "fun": lambda x: 0.3 - (electricity_power_ext_current + x[1])},
+        # {"type": "ineq", "fun": lambda x: electricity_power_ext_max - (electricity_power_ext_current + x[1])},
+        {"type": "ineq", "fun": lambda x: 0.3 - (electricity_power_ext_current + x[1])},
+        {"type": "ineq", "fun": lambda x: (electricity_power_ext_current + x[1]) + 3},
     )
 
     cons = (
