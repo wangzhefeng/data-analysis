@@ -373,7 +373,7 @@ if __name__ == "__main__":
     # ----------
     # data_1109 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109.csv")
     # data_1110 = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1110/result-1110.csv")
-    # data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
+    data_1109_dropna = pd.read_csv("/mnt/e/dev/data-analysis/turbine_model/data/1109/result-1109_dropna.csv")
     # ----------
     # cam
     # ----------
@@ -384,5 +384,5 @@ if __name__ == "__main__":
     #
     # ----------
     # get_result(data = data_1109_dropna)
-    # get_result_i(data_1109_dropna, 848)
-    unit_test()
+    get_result_i(data_1109_dropna, 848)
+    # unit_test()

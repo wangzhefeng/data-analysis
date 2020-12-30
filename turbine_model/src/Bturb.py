@@ -46,11 +46,16 @@ class Bturb_V1:
         self.steam_flow_in_threshold = steam_flow_in_threshold
         self.__dict__.update(kwargs)
         self.electricity_power = np.nan
+        self.electricity_power2 = np.nan
         self.machine_status = np.nan
         self.parameters_simple = []
         self.parameters_enthalpy = []
         self.parameters_complex = []
 
+
+    # -----------------------------------------------------------
+    # Simple
+    # -----------------------------------------------------------
     def regression_simple(self, steam_flow_in_history, electricity_generation_history, machine_statu):
         X = np.array([steam_flow_in_history]).T
         Y = np.array(electricity_generation_history).reshape(-1, 1)
@@ -64,8 +69,13 @@ class Bturb_V1:
     
     def electricity_sample(self, steam_flow_in):
         self.electricity_power = self.parameters_simple * np.array([steam_flow_in, 1])
+        self.electricity_power2 = reg.predict(np.array([[steam_flow_in]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
-
+    # -----------------------------------------------------------
+    # enthalpy
+    # -----------------------------------------------------------
     def regression_enthalpy(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history, 
                             steam_pressure_side_history, steam_temperature_side_history,
                             electricity_generation_history, machine_statu):
@@ -87,8 +97,53 @@ class Bturb_V1:
         eturb_h1 = seuif97.pt2h(steam_pressure_side, steam_temperature_side)
         x_value = (steam_flow_in * (eturb_h0 - eturb_h1)) / 3600
         self.electricity_power = self.parameters_enthalpy * np.array([x_value, 1])
+        self.electricity_power2 = reg.predict(np.array([[x_value]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
-    
+
+    # -----------------------------------------------------------
+    # Complex 1
+    # -----------------------------------------------------------
+    def regression_complex(self, steam_flow_in_history, steam_pressure_in_history, 
+                           steam_pressure_side_history, 
+                           electricity_generation_history, machine_statu):
+        if machine_statu:
+            X = np.array([
+                steam_flow_in_history,
+                steam_pressure_in_history,
+                steam_pressure_side_history
+            ]).T
+            Y = np.array(electricity_generation_history).reshape(-1, 1)
+            reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
+            coefs = reg.coef_
+            intercept = reg.intercept_
+            self.parameters_complex = [coefs[0][i] for i in len(coefs[0])]
+            self.parameters_complex.appned(intercept[0])
+        else:
+            self.parameters_complex = [0, 0, 0, 0]
+
+    def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_pressure_out):
+        self.electricity_power = self.parameters_complex * np.array([
+            steam_flow_in,
+            steam_pressure_in,
+            steam_temperature_in,
+            steam_pressure_side,
+            steam_temperature_side,
+            1
+        ])
+        self.electricity_power2 = reg.predict(
+            np.array([[
+                steam_flow_in, steam_pressure_in, steam_pressure_out
+            ]])
+        )
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
+
+
+    # -----------------------------------------------------------
+    # Complex 2
+    # -----------------------------------------------------------
     def regression_complex(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history, 
                            steam_pressure_side_history, steam_temperature_side_history, 
                            electricity_generation_history, machine_statu):
@@ -98,8 +153,7 @@ class Bturb_V1:
                 steam_pressure_in_history,
                 steam_temperature_in_history,
                 steam_pressure_side_history,
-                steam_temperature_side_history,
-                electricity_generation_history
+                steam_temperature_side_history
             ]).T
             Y = np.array(electricity_generation_history).reshape(-1, 1)
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
@@ -108,12 +162,9 @@ class Bturb_V1:
             self.parameters_complex = [coefs[0][i] for i in len(coefs[0])]
             self.parameters_complex.appned(intercept[0])
         else:
-            self.parameters_complex = [0, 0, 0, 0, 0, 0, 0]
+            self.parameters_complex = [0, 0, 0, 0, 0, 0]
 
-    def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
-                            steam_pressure_out, steam_temperature_out,
-                            steam_flow_side, steam_pressure_side, steam_temperature_side):
-        #TODO
+    def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in, steam_pressure_side, steam_temperature_side):
         self.electricity_power = self.parameters_complex * np.array([
             steam_flow_in,
             steam_pressure_in,
@@ -122,6 +173,26 @@ class Bturb_V1:
             steam_temperature_side,
             1
         ])
+        self.electricity_power2 = reg.predict(
+            np.array([[
+                steam_flow_in, 
+                steam_pressure_in, 
+                steam_temperature_in,
+                steam_pressure_side, 
+                steam_temperature_side
+            ]])
+        )
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
+
+    # -----------------------------------------------------------
+    # machine statu
+    # -----------------------------------------------------------
     def machine_statu(self):
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
+
+
+
+if __name__ == "__main__":
+    pass

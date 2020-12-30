@@ -59,6 +59,8 @@ class Eturb:
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
 
 
+
+
 class Eturb_V2:
     """
     抽凝汽轮发电机组
@@ -69,11 +71,38 @@ class Eturb_V2:
         self.steam_flow_in_threshold = steam_flow_in_threshold
         self.__dict__.update(kwargs)
         self.electricity_power = np.nan
+        self.electricity_power2 = np.nan
         self.machine_status = np.nan
         self.parameters_simple = []
         self.parameters_enthalpy = []
-        self.parameters_complex = []
+        self.parameters_complex_1 = []
+        self.parameters_complex_2 = []
 
+
+    # -----------------------------------------------------------
+    # Simple 1
+    # -----------------------------------------------------------
+    def regression_simple(self, steam_flow_in_history, electricity_generation_history, machine_statu):
+        X = np.array([steam_flow_in_history]).T
+        Y = np.array(electricity_generation_history).reshape(-1, 1)
+        if machine_statu == 1:
+            reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
+            coefs = reg.coef_
+            intercept = reg.intercept_
+            self.parameters_simple = [coefs[0][0], intercept[0]]
+        else:
+            self.parameters_simple = [0, 0]
+    
+    def electricity_sample(self, steam_flow_in):
+        self.electricity_power = self.parameters_simple * np.array([steam_flow_in, 1])
+        self.electricity_power2 = reg.predict(np.array([[steam_flow_in]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
+
+
+    # -----------------------------------------------------------
+    # Simple 2
+    # -----------------------------------------------------------
     def regression_simple(self, steam_flow_in_history, steam_flow_side_history, electricity_generation_history, machine_statu):
         X = np.array([steam_flow_in_history, steam_flow_side_history]).T
         Y = np.array(electricity_generation_history).reshape(-1, 1)
@@ -87,8 +116,14 @@ class Eturb_V2:
     
     def electricity_sample(self, steam_flow_in, steam_flow_side):
         self.electricity_power = self.parameters_simple * np.array([steam_flow_in, steam_flow_side, 1])
+        self.electricity_power2 = reg.predict(np.array([[steam_flow_in, steam_flow_side]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
-
+    
+    # -----------------------------------------------------------
+    # Enthalpy
+    # -----------------------------------------------------------
     def regression_enthalpy(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history,
                             steam_pressure_out_history, steam_temperature_out_history, 
                             steam_flow_side_history, steam_pressure_side_history, steam_temperature_side_history,
@@ -117,8 +152,54 @@ class Eturb_V2:
         self.eturb_h1_2 = seuif97.px2h((101 - steam_pressure_side) / 1000, steam_temperature_side)
         x_value = (steam_flow_in * (eturb_h0 - eturb_hc) + steam_flow_side * (eturb_hc - eturb_h1)) / 3600
         self.electricity_power = self.parameters_enthalpy * np.array([x_value, 1])
+        self.electricity_power2 = reg.predict(np.array([[x_value]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
+
+    # -----------------------------------------------------------
+    # Complex 1
+    # -----------------------------------------------------------
+    def regression_complex(self, steam_flow_in_history, steam_pressure_in_history, 
+                           steam_pressure_out_history,
+                           steam_flow_side_history, steam_pressure_side_history,
+                           electricity_generation_history, machine_statu):
+        if machine_statu:
+            X = np.array([
+                steam_flow_in_history,
+                steam_pressure_in_history,
+                steam_pressure_out_history,
+                steam_flow_side_history,
+                steam_pressure_side_history
+            ]).T
+            Y = np.array(electricity_generation_history).reshape(-1, 1)
+            reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
+            coefs = reg.coef_
+            intercept = reg.intercept_
+            self.parameters_complex = [coefs[0][i] for i in len(coefs[0])]
+            self.parameters_complex.appned(intercept[0])
+        else:
+            self.parameters_complex = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    def electricity_complex(self, steam_flow_in, steam_pressure_in,
+                            steam_pressure_out,
+                            steam_flow_side, steam_pressure_side):
+        self.electricity_power = self.parameters_complex * np.array([
+            steam_flow_in,
+            steam_pressure_in,
+            steam_pressure_out,
+            steam_flow_side,
+            steam_pressure_side,
+            1
+        ])
+        self.electricity_pwoer2 = reg.predict(np.array([[steam_flow_in, steam_pressure_in, steam_pressure_out, steam_flow_side, steam_pressure_side]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
     
+
+    # -----------------------------------------------------------
+    # Complex 2
+    # -----------------------------------------------------------
     def regression_complex(self, steam_flow_in_history, steam_pressure_in_history, steam_temperature_in_history,
                                  steam_pressure_out_history, steam_temperature_out_history,
                                  steam_flow_side_history, steam_pressure_side_history, steam_temperature_side_history,
@@ -135,6 +216,7 @@ class Eturb_V2:
                 steam_temperature_side_history
             ]).T
             Y = np.array(electricity_generation_history).reshape(-1, 1)
+            
             reg = linear_model.LinearRegression(fit_intercept = True).fit(X, Y)
             coefs = reg.coef_
             intercept = reg.intercept_
@@ -146,7 +228,6 @@ class Eturb_V2:
     def electricity_complex(self, steam_flow_in, steam_pressure_in, steam_temperature_in,
                             steam_pressure_out, steam_temperature_out,
                             steam_flow_side, steam_pressure_side, steam_temperature_side):
-        #TODO
         self.electricity_power = self.parameters_complex * np.array([
             steam_flow_in,
             steam_pressure_in,
@@ -158,7 +239,22 @@ class Eturb_V2:
             steam_temperature_side,
             1
         ])
+        self.electricity_power2 = reg.predict(np.array([[
+            steam_flow_in, steam_pressure_in, steam_temperature_in,
+            steam_pressure_out, steam_temperature_out,
+            steam_flow_side, steam_pressure_side, steam_temperature_side
+        ]]))
+        logging.error(f"self.electricity_power={self.electricity_power}")
+        logging.error(f"self.electricity_power2={self.electricity_power2}")
 
+
+    # -----------------------------------------------------------
+    # machine statu
+    # -----------------------------------------------------------
     def machine_statu(self):
         self.machine_status = 1 if self.steam_flow_in > self.steam_flow_in_threshold else 0
 
+
+
+if __name__ == "__main__":
+    pass

@@ -166,6 +166,7 @@ def contraint(args):
         {"type": "ineq", "fun": lambda x: TURBINE_STEAM_ADJUST_DELTA - x[9]}
     )
     cons = cons + electricity_power_ext_cons
+    print(cons)
 
     return cons
 
